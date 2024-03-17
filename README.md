@@ -21,3 +21,5 @@ ITCC 11.1 - B Activity 5 by Francis King C. Uyguangco
 3. Go to File>Open SQL Script and locate the cloned SQL dump file.
 4. Click the lightning icon to run the file.
 5. Go to the cloned java file and change the user and password for the connection.
+6. Check the library for the JDBC driver or the jar file. If it does not exist, add it to the library to successfully 
+        connect the java file and the database.
