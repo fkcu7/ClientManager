@@ -1,7 +1,7 @@
 # Virtual Assistance Client Manager Java Program
 
 ITCC 11.1 - B Activity 5 by Francis King C. Uyguangco
-
+Created using MySQL Workbench and NetBeans IDE 16
 
 ## Application Features
 
