@@ -9,7 +9,7 @@ ITCC 11.1 - B Activity 5 by Francis King C. Uyguangco
 2. **Service Management** - the admin can add, view, update, and delete services offered.
 3. **Invoice Management** - the admin generate new invoices, add a service to the invoice, update the hours of service,
                 and delete an invoice.
-4. *Analytics*: 
+4. **Analytics**: 
         1. **Total Income** - the admin can view his/her total income for the time period given.
         2. **Popular Serive** - the admin can view his/her most availed services from the time period given.
         3. **Top Client** - the admin can view his/her top client for the time period given.
