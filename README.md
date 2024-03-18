@@ -5,8 +5,8 @@ ITCC 11.1 - B Activity 5 by Francis King C. Uyguangco
 
 ## Application Features
 
-1. **Client Management** - the admin can add, view, update, and delete clients. 
-2. **Service Management** - the admin can add, view, update, and delete services offered.
+1. **Client Management** - the admin can add, view, update, delete, and view total billing per clients.
+2. **Service Management** - the admin can add, view, update, delete and view total hours and billing per services.
 3. **Invoice Management** - the admin generate new invoices, add a service to the invoice, update the hours of service,
                 and delete an invoice.
 4. **Analytics**: 
