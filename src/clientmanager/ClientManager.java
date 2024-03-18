@@ -147,7 +147,7 @@ class SQLAccess
             }
             return counter + 100;
         } 
-         catch (SQLException e) 
+        catch (SQLException e) 
         {
             e.printStackTrace();
             return -1;
@@ -228,6 +228,7 @@ class SQLAccess
     {
         try 
         {
+            System.out.println("==============================\nServices Offered:");
             ServicesList = connect.createStatement().executeQuery("select * from vaclientmanager.services");
             while (ServicesList.next()) 
             {
@@ -236,6 +237,7 @@ class SQLAccess
                 String Rate = ServicesList.getString("rate");
                 System.out.println("Service Number: " + ID + " Description: " + Description + " Rate: $" + Rate);
             }
+            System.out.println("==============================");
         } 
         catch (SQLException e) 
         {
@@ -247,6 +249,7 @@ class SQLAccess
     {
         try 
         {
+            System.out.println("==============================\nAll Invoice:");
             InvoiceList = connect.createStatement().executeQuery("select * from vaclientmanager.invoice");
             while (InvoiceList.next()) 
             {
@@ -256,6 +259,7 @@ class SQLAccess
                 System.out.println("Invoice Number: " + ID + " Client ID: " + clientID + " Date: " + date);
                 ViewInvoiceClientList(ID);
             }
+            System.out.println("==============================");
         } 
         catch (SQLException e) 
         {
@@ -291,10 +295,85 @@ class SQLAccess
         }
     }
     
+    private void TotalBillperClient() throws SQLException
+    {
+        try 
+        {
+            System.out.println("==============================\nTotal Bill per Client:");
+            int Total = 0;
+            ClientList = connect.createStatement().executeQuery("select * from vaclientmanager.client");
+            while (ClientList.next())
+            {
+                String clientID = ClientList.getString("clientID");
+                String FName = ClientList.getString("FName");
+                String LName = ClientList.getString("LName");
+                InvoiceList = connect.createStatement().executeQuery("select * from vaclientmanager.invoice");
+                while (InvoiceList.next())
+                {
+                    String client = InvoiceList.getString("clientID");
+                    String invoiceNum = InvoiceList.getString("invoiceNum");
+                    if (clientID.equals(client)) 
+                    {
+                        InvoiceClientList = connect.createStatement().executeQuery("select * from vaclientmanager.invoice_client");
+
+                        while (InvoiceClientList.next()) 
+                        {
+                            String id = InvoiceClientList.getString("invoiceNum");
+                            if (id.equals(invoiceNum))
+                            {
+                                String serviceID = InvoiceClientList.getString("serviceID");
+                                int workHours = InvoiceClientList.getInt("workHours");
+                                int Rate = getRate(serviceID);
+                                Total = Total + (Rate * workHours);
+                            }
+                        }
+                    }
+                }
+                System.out.println("Client Number: " + clientID + " Client Name: " + 
+                    LName + ", " + FName + " Total Billing: " + Total);
+                Total = 0;
+            }
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    private void TotalHoursperServices() throws SQLException
+    {
+        int TotalHours = 0;
+        int Total = 0;
+        System.out.println("==============================\nTotal Hours per Service:");
+        ServicesList = connect.createStatement().executeQuery("select * from vaclientmanager.services");
+        while(ServicesList.next())
+        {
+            String serviceID = ServicesList.getString("serviceID");
+            String description = ServicesList.getString("sDescription");
+            int rate = ServicesList.getInt("rate");
+            InvoiceClientList = connect.createStatement().executeQuery("select * from vaclientmanager.invoice_client");
+            while (InvoiceClientList.next())
+            {
+                String id = InvoiceClientList.getString("serviceID");
+                if (id.equals(serviceID))
+                {
+                    int Hours = InvoiceClientList.getInt("workHours");
+                    TotalHours = TotalHours + Hours;
+                }
+            }
+            Total = TotalHours * rate;
+            System.out.println("Service Number: " + serviceID + " Service Description: " + 
+                    description + " Total Hours: " + TotalHours + " Rate: $" + rate + " Total Billing: " + Total);
+                TotalHours = 0;
+                Total = 0;
+        }
+    }
+    
     private void AddNewClient() throws SQLException, ParseException 
     {
         try 
         {
+            System.out.println("==============================\nAdding New Client\nEnter Required Details");
             System.out.print("Contact Number (09#########): ");
             String contact = c.nextLine();
             checkClient = connect.prepareStatement("Select count(*) from vaclientmanager.client where contactNum = ?");
@@ -323,7 +402,7 @@ class SQLAccess
             newClient.setString(4, address);
             newClient.executeUpdate();
 
-            System.out.println("Client added successfully.");
+            System.out.println("Client added successfully.\n==============================");
 
             System.out.println("Would you like to add service availed?\n1.Yes\n2.No");
             int Choice = cl.nextInt();
@@ -343,7 +422,7 @@ class SQLAccess
             }
             else 
             {
-                System.out.println("Enter 1 or 2 only.");
+                System.out.println("Enter 1 or 2 only.\n==============================");
             }
         } 
         catch (SQLException e) 
@@ -399,7 +478,9 @@ class SQLAccess
     
     private void AddNewService() throws SQLException
     {
-        try {
+        try 
+        {
+            System.out.println("==============================\nAdding New Service to offer\nEnter Required Details");
             Scanner cl = new Scanner(System.in);
             System.out.print("Service Description: ");
             String sDescription = cl.nextLine();
@@ -423,7 +504,7 @@ class SQLAccess
             newService.setString(2, rate);
             newService.executeUpdate();
 
-            System.out.println("Service added successfully.");
+            System.out.println("Service added successfully\n==============================");
         } 
         catch (SQLException e) 
         {
@@ -472,9 +553,9 @@ class SQLAccess
             } 
             while (cl.nextInt() == 1);
             System.out.println("Invoice Number: " + invoiceNum + " Client Number: " + ID);
-                System.out.println("Total Income: $" + Total);
+                System.out.println("Total Income: $" + Total + "\n==============================");
                 InvoiceList();
-            }
+        }
         catch(SQLException e)
         {
             e.printStackTrace();
@@ -483,6 +564,22 @@ class SQLAccess
         {
             System.out.println("Please follow the format (yyyy-mm-dd).");
             AddServiceInvoice(invoiceNum, ID);
+        }
+    }
+    
+    private void AddData() throws SQLException, ParseException
+    {
+        ViewClientList();
+        System.out.println("Which Client would you like to add a new service request?");
+        String clientID = c.nextLine();
+        if(ListChecker(clientID))
+        {
+            AddServiceData(clientID);
+        }
+        else
+        {
+            System.out.println("Client Number entered does not exist.\n==============================");
+            ExistingClient();
         }
     }
     
@@ -506,8 +603,8 @@ class SQLAccess
             }
             else
             {
-                System.out.println("Client number does not exist. Try again.");
-                GenerateInvoice();
+                System.out.println("Client number does not exist.\n==============================");
+                InvoiceList();
             }
         }
         catch (SQLException e)
@@ -516,7 +613,7 @@ class SQLAccess
         }
     }
     
-    private void UpdateClientList()
+    private void UpdateClientList() throws ParseException
     {
         try 
         {
@@ -571,12 +668,12 @@ class SQLAccess
                 updateClient.setString(2, clientID);
                 updateClient.executeUpdate();
 
-                System.out.println("Client information updated successfully.");
+                System.out.println("Client information updated successfully.\n==============================");
             }
             else
             {
-                System.out.println("Client Number entered does not exist. Try again.");
-                UpdateClientList();
+                System.out.println("Client Number entered does not exist.\n==============================");
+                ExistingClient();
             }
         } 
         catch (SQLException e) 
@@ -596,81 +693,46 @@ class SQLAccess
             boolean serviceExists = checkServiceExists(serviceID);
             if (!serviceExists) 
             {
-                System.out.println("ServiceID does not exist.");
-                return;
+                System.out.println("ServiceID does not exist.\n==============================");
+                ServiceList();
             }
-            
-            
-            System.out.println("What would you like to update from this service?\n1.Description\n2.Rate");
-            int choice = cl.nextInt();
-            
-            String dataToUpdate;
-            String newValue;
-            switch (choice)
+            else
             {
-                case 1:
+                System.out.println("What would you like to update from this service?\n1.Description\n2.Rate");
+                int choice = cl.nextInt();
+            
+                String dataToUpdate;
+                String newValue;
+                switch (choice)
                 {
-                    dataToUpdate = "sDescription";
-                    System.out.print("Enter the new description: ");
-                    newValue = c.nextLine();
-                    break;
+                    case 1:
+                    {
+                        dataToUpdate = "sDescription";
+                        System.out.print("Enter the new description: ");
+                        newValue = c.nextLine();
+                        break;
+                    }
+                    case 2:
+                    {
+                        dataToUpdate = "rate";
+                        System.out.print("Enter the new rate: $");
+                        newValue = c.nextLine();
+                        break;
+                    }
+                    default:
+                        System.out.println("Invalid choice");
+                        return;
                 }
-                case 2:
-                {
-                    dataToUpdate = "rate";
-                    System.out.print("Enter the new rate: $");
-                    newValue = c.nextLine();
-                    break;
-                }
-                default:
-                    System.out.println("Invalid choice");
-                    return;
-            }
-            updateService = connect.prepareStatement("update vaclientmanager.services set " + dataToUpdate + " = " + newValue + " where serviceID =" + serviceID);
-            updateService.executeUpdate();
+                updateService = connect.prepareStatement("update vaclientmanager.services set " + dataToUpdate + " = " + newValue + " where serviceID =" + serviceID);
+                updateService.executeUpdate();
 
-            System.out.println("Client information updated successfully.");
+                System.out.println("Client information updated successfully.\n==============================");
+            }
         }
         catch (SQLException e)
         {
             e.printStackTrace();
         }
-    }
-    
-    private void DeleteService()
-    {
-        try 
-        {
-            ViewServiceList();
-        
-            System.out.print("Enter the ServiceID you want to delete: ");
-            int serviceID = cl.nextInt();
-        
-            boolean serviceExists = checkServiceExists(serviceID);
-            if (!serviceExists) 
-            {
-                System.out.println("ServiceID does not exist.");
-                return;
-            }
-       
-            deleteClientServices = connect.prepareStatement("delete from vaclientmanager.client_services where serviceID = ?");
-            deleteClientServices.setInt(1, serviceID);
-            deleteClientServices.executeUpdate();
-
-            deleteInvoiceClient = connect.prepareStatement("delete from vaclientmanager.invoice_client where serviceID = ?");
-            deleteInvoiceClient.setInt(1, serviceID);
-            deleteInvoiceClient.executeUpdate();
-
-            deleteService = connect.prepareStatement("delete from vaclientmanager.services where serviceID = ?");
-            deleteService.setInt(1, serviceID);
-            deleteService.executeUpdate();
-        
-            System.out.println("Service deleted successfully.");
-        } 
-        catch (SQLException e) 
-        {
-            e.printStackTrace();
-        }  
     }
     
     private void EditInvoice() throws ParseException
@@ -685,10 +747,12 @@ class SQLAccess
             {
                 String clientID = getClientIDFromInvoice(invoiceNum);
                 boolean validChoice = false;
-                while (!validChoice) {
+                while (!validChoice) 
+                {
                     System.out.println("What would you like to do?\n1.Add Service\n2.Update Hours\n3.Exit");
                     int choice = cl.nextInt();
-                    switch (choice) {
+                    switch (choice) 
+                    {
                         case 1:
                         {
                             AddServiceInvoice(invoiceNum,clientID);
@@ -709,11 +773,12 @@ class SQLAccess
                             System.out.println("Invalid choice.");
                     }
                 }
+                System.out.println("Invoice Updated Successfully.\n==============================");
             }   
             else 
             {
-                System.out.println("Invoice number does not exist. Try again.");
-                EditInvoice();
+                System.out.println("Invoice number does not exist.\n==============================");
+                InvoiceList();
             }
         }
         catch (SQLException e) 
@@ -722,7 +787,44 @@ class SQLAccess
         }
     }
     
-    private void DeleteInvoice()
+    private void DeleteService()
+    {
+        try 
+        {
+            ViewServiceList();
+            System.out.print("Enter the ServiceID you want to delete: ");
+            int serviceID = cl.nextInt();
+        
+            boolean serviceExists = checkServiceExists(serviceID);
+            if (!serviceExists) 
+            {
+                System.out.println("ServiceID does not exist.\n==============================");
+                ServiceList();
+            }
+            else
+            {
+                deleteClientServices = connect.prepareStatement("delete from vaclientmanager.client_services where serviceID = ?");
+                deleteClientServices.setInt(1, serviceID);
+                deleteClientServices.executeUpdate();
+
+                deleteInvoiceClient = connect.prepareStatement("delete from vaclientmanager.invoice_client where serviceID = ?");
+                deleteInvoiceClient.setInt(1, serviceID);
+                deleteInvoiceClient.executeUpdate();
+
+                deleteService = connect.prepareStatement("delete from vaclientmanager.services where serviceID = ?");
+                deleteService.setInt(1, serviceID);
+                deleteService.executeUpdate();
+        
+                System.out.println("Service deleted successfully.\n==============================");
+            }
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }  
+    }
+    
+    private void DeleteInvoice() throws ParseException
     {
         try 
         {
@@ -740,11 +842,12 @@ class SQLAccess
                 deleteInvoiceClient.setString(1, invoiceNum);
                 deleteInvoiceClient.executeUpdate();
             
-                System.out.println("Invoice deleted successfully.");
+                System.out.println("Invoice deleted successfully.\n==============================");
             } 
             else 
             {
-                System.out.println("Invoice number does not exist. Please try again.");
+                System.out.println("Invoice number does not exist. Pleas.\n==============================");
+                InvoiceList();
             }
         } 
         catch (SQLException e) 
@@ -753,7 +856,7 @@ class SQLAccess
         }
     }
     
-    private void DeleteClient()
+    private void DeleteClient() throws ParseException
     {
         try 
         {
@@ -781,13 +884,13 @@ class SQLAccess
                     deleteClient = connect.prepareStatement("delete from vaclientmanager.client where clientID = ?");
                     deleteClient.setString(1,clientID);
                     deleteClient.executeUpdate();
-                    System.out.println("Client information deleted successfully.");
+                    System.out.println("Client information deleted successfully.\n==============================");
                 }
             }
             else
                 {
-                    System.out.println("Client Number entered does not exist. Try again.");
-                    DeleteClient();
+                    System.out.println("Client Number entered does not exist.\n==============================");
+                    ExistingClient();
                 }
         }
         catch (SQLException e) 
@@ -800,7 +903,7 @@ class SQLAccess
     {
         try 
         {
-            System.out.println("1.View\n2.Add\n3.Update\n4.Delete\n5.Back");
+            System.out.println("1.View\n2.Add\n3.Update\n4.Delete\n5.Total Hours per Service\n6.Back");
             int choice = cl.nextInt();
             switch (choice) 
             {
@@ -827,6 +930,11 @@ class SQLAccess
                 }
                 case 5:
                 {
+                    TotalHoursperServices();
+                    break;
+                }
+                case 6:
+                {
                     break;
                 }
                 default:
@@ -844,7 +952,7 @@ class SQLAccess
     {
         try 
         {
-            System.out.println("1.View\n2.Update\n3.Delete\n4.New Service Request\n5.Back");
+            System.out.println("1.View\n2.Update\n3.Delete\n4.New Service Request\n5.Total Bill per Client\n6.Back");
             int choice = cl.nextInt();
             switch (choice) 
             {
@@ -870,6 +978,11 @@ class SQLAccess
                     break;
                 }
                 case 5:
+                {
+                    TotalBillperClient();
+                    break;
+                }
+                case 6:
                 {
                     break;
                 }
@@ -925,22 +1038,6 @@ class SQLAccess
         catch (SQLException e) 
         {
             e.printStackTrace();
-        }
-    }
-    
-    private void AddData() throws SQLException, ParseException
-    {
-        ViewClientList();
-        System.out.println("Which Client would you like to add a new service request?");
-        String clientID = c.nextLine();
-        if(ListChecker(clientID))
-        {
-            AddServiceData(clientID);
-        }
-        else
-        {
-            System.out.println("Client Number entered does not exist. Try again.");
-            AddData();
         }
     }
     
@@ -1036,7 +1133,7 @@ class SQLAccess
             updateInvoiceClient = connect.prepareStatement("update vaclientmanager.invoice_client set workHours = " + newHours + " where serviceID = " + serviceID);
             updateInvoiceClient.executeUpdate();
             
-            System.out.println("Hours of work updated successfully.");
+            System.out.println("Hours of work updated successfully.\n==============================");
         } 
         catch (SQLException e) 
         {
